@@ -1,36 +1,30 @@
-import { Space, spaces } from '../data/spaces';
+import { prisma } from '../lib/prisma';
+import type { Space } from '@prisma/client';
 
-let nextId = 4;
-
-export function listSpaces(): Space[] {
-  return spaces;
+export async function listSpaces(): Promise<Space[]> {
+  return prisma.space.findMany();
 }
 
-export function findSpaceById(id: number): Space | undefined {
-  return spaces.find((s) => s.id === id);
+export async function findSpaceById(id: number): Promise<Space | null> {
+  return prisma.space.findUnique({ where: { id } });
 }
 
-export function createSpace(data: Omit<Space, 'id'>): Space {
-  const newSpace: Space = { id: nextId++, ...data };
-  spaces.push(newSpace);
-  return newSpace;
+export async function createSpace(data: Omit<Space, 'id'>): Promise<Space> {
+  return prisma.space.create({ data });
 }
 
-export function updateSpace(id: number, data: Partial<Omit<Space, 'id'>>): Space | undefined {
-  const space = findSpaceById(id);
-  if (!space) return undefined;
-
-  if (data.name !== undefined) space.name = data.name;
-  if (data.capacity !== undefined) space.capacity = data.capacity;
-  if (data.location !== undefined) space.location = data.location;
-  if (data.type !== undefined) space.type = data.type;
-
-  return space;
+export async function updateSpace(
+  id: number,
+  data: Partial<Omit<Space, 'id'>>
+): Promise<Space | null> {
+  const exists = await findSpaceById(id);
+  if (!exists) return null;
+  return prisma.space.update({ where: { id }, data });
 }
 
-export function deleteSpace(id: number): boolean {
-  const index = spaces.findIndex((s) => s.id === id);
-  if (index === -1) return false;
-  spaces.splice(index, 1);
+export async function deleteSpace(id: number): Promise<boolean> {
+  const exists = await findSpaceById(id);
+  if (!exists) return false;
+  await prisma.space.delete({ where: { id } });
   return true;
 }
