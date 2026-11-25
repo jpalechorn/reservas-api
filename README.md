@@ -15,6 +15,7 @@ Integrantes: Jarol Palechor, Jhovanny y Anderson.
 | Autenticación | JWT (`jsonwebtoken`) |
 | Cifrado de contraseñas | `bcryptjs` |
 | Ejecución en desarrollo | `tsx watch` |
+| Validación | Zod 4 |
 | Pruebas | Postman y PowerShell |
 
 ## Estructura del proyecto
@@ -28,7 +29,9 @@ reservas-api/
 │   ├── controllers/           Manejo de la petición y la respuesta HTTP
 │   ├── services/              Lógica de negocio y acceso a datos con Prisma
 │   ├── routes/                Definición de endpoints
-│   ├── middlewares/           Autenticación (JWT) y autorización por rol
+│   ├── middlewares/           Autenticación (JWT), rol, validación (Zod) y errores
+│   ├── errors/                AppError: error esperado con código HTTP y code
+│   ├── schemas/               Esquemas Zod de entrada
 │   ├── types/                 Tipos propios (usuario autenticado en la request)
 │   └── index.ts               Punto de entrada del servidor
 ├── docs/
@@ -170,7 +173,7 @@ Respuesta esperada: `{ "status": "ok" }`.
 }
 ```
 
-- El nombre, el correo y la contraseña son obligatorios, y la contraseña debe tener al menos 8 caracteres.
+- El nombre (mínimo 2 caracteres), el correo válido y la contraseña (mínimo 8 caracteres) son obligatorios; los valida Zod.
 - El usuario registrado queda siempre con rol `CLIENT`. El rol no se recibe en el body, para que nadie pueda registrarse como administrador.
 - Si el correo ya existe, responde `409`.
 
@@ -222,6 +225,58 @@ Authorization: Bearer TOKEN
 2. **Rol (`requireRole`)**: verifica que el rol del usuario esté permitido en la ruta. Si no lo está, responde `403`.
 3. **Propietario**: al crear un espacio, el `ownerId` se toma del usuario autenticado, no del body. Al actualizar, un `OWNER` solo puede modificar los espacios cuyo `ownerId` coincida con su `id`; si intenta modificar uno ajeno, responde `403`. El `ADMIN` puede modificar cualquiera.
 
+## Manejo de errores y validación
+
+Todos los errores responden con el mismo formato JSON y el código HTTP que corresponde:
+
+```json
+{ "error": { "code": "VALIDATION_ERROR", "message": "Datos de entrada invalidos", "details": [ { "campo": "capacity", "mensaje": "capacity debe ser mayor que 0" } ] } }
+```
+
+- `details` solo aparece en los errores de validación.
+- Los Services y los middlewares (`requireAuth`, `requireRole`) lanzan `AppError` (`src/errors/app-error.ts`). Los controladores no tienen `try/catch` ni `if` de validación: Express 5 envía al middleware de errores lo que lanza una función `async`.
+- `notFoundMiddleware` y `errorMiddleware` (`src/middlewares/error.middleware.ts`) se montan al final de `src/index.ts`, después de todas las rutas.
+- Cada endpoint de escritura valida el body con un esquema Zod (`src/schemas/`) y las rutas con `:id` validan el id. El orden de cada ruta es `requireAuth → requireRole → validate → controlador`.
+- Zod descarta los campos que no están en el esquema: un `"role": "ADMIN"` en el registro o un `"ownerId"` al crear un espacio no llegan al controlador.
+- Un error inesperado responde 500 `INTERNAL_ERROR`. Con `NODE_ENV=production` la respuesta no incluye `stack`; el detalle completo queda en la consola del servidor (`console.error`).
+
+### Catálogo de errores
+
+| HTTP | code | Cuándo ocurre |
+|---|---|---|
+| 400 | `VALIDATION_ERROR` | El body o el id de la ruta no cumplen el esquema Zod: campo faltante, correo inválido, `capacity` no positiva, id no numérico (`/api/spaces/abc`) o un PUT sin campos. `details` lista cada campo con su mensaje |
+| 400 | `INVALID_JSON` | El cuerpo de la petición no es un JSON válido |
+| 401 | `TOKEN_MISSING` | La ruta exige token y no llegó `Authorization: Bearer <token>` |
+| 401 | `TOKEN_INVALID` | El token está alterado, mal formado o expirado |
+| 401 | `INVALID_CREDENTIALS` | Login con un correo que no existe o una contraseña incorrecta (el mismo error en los dos casos) |
+| 403 | `FORBIDDEN_ROLE` | El rol no tiene permiso para la operación (un `CLIENT` crea un espacio, un `OWNER` elimina) |
+| 403 | `NOT_SPACE_OWNER` | Un `OWNER` intenta editar un espacio que no es suyo |
+| 404 | `SPACE_NOT_FOUND` | El espacio con ese id no existe |
+| 404 | `NOT_FOUND` | Prisma no encontró el registro a modificar (P2025) |
+| 404 | `ROUTE_NOT_FOUND` | La ruta o el verbo no existen (por ejemplo, `GET /api/cursos`) |
+| 409 | `EMAIL_TAKEN` | Registro con un correo que ya tiene cuenta |
+| 409 | `DUPLICATE` | Valor único repetido en la base (P2002), por ejemplo un espacio con un nombre que ya existe |
+| 409 | `RELATION_CONFLICT` | La operación viola una relación (P2003), por ejemplo borrar un usuario que tiene espacios |
+| 500 | `INTERNAL_ERROR` | Error inesperado del servidor (por ejemplo, falta `JWT_SECRET`). En producción no incluye `stack` |
+| 503 | `DATABASE_UNAVAILABLE` | PostgreSQL no responde (P1001, P1002, P1017 o error de inicialización de Prisma) |
+
+### Cómo provocar el 500 y el 503
+
+**500 en producción sin stack.** Comentar `JWT_SECRET` en `.env` y arrancar en modo producción (PowerShell):
+
+```powershell
+$env:NODE_ENV="production"; npm run dev
+```
+
+Un login válido responde `500 {"error":{"code":"INTERNAL_ERROR","message":"Error interno del servidor"}}` sin `stack`, y la consola muestra `Error: JWT_SECRET no esta configurado`. Después, restaurar `JWT_SECRET` y quitar la variable: `Remove-Item Env:NODE_ENV`.
+
+**503 con la base apagada.** Con la API corriendo:
+
+```powershell
+docker stop reservas-db      # GET /api/spaces -> 503 DATABASE_UNAVAILABLE
+docker start reservas-db     # GET /api/spaces -> 200 de nuevo
+```
+
 ## Códigos de respuesta
 
 | Código | Significado en esta API |
@@ -229,11 +284,13 @@ Authorization: Bearer TOKEN
 | `200` | Operación correcta |
 | `201` | Recurso creado (registro de usuario o espacio) |
 | `204` | Espacio eliminado |
-| `400` | Datos incompletos o inválidos |
-| `401` | No autenticado: falta el token o no es válido |
-| `403` | Autenticado, pero sin permiso para la operación |
-| `404` | El espacio no existe |
+| `400` | Datos inválidos (Zod) o JSON mal escrito |
+| `401` | No autenticado: falta el token, no es válido o las credenciales son incorrectas |
+| `403` | Autenticado, pero sin permiso (por rol o por no ser el dueño) |
+| `404` | El espacio o la ruta no existen |
 | `409` | Conflicto: correo o nombre de espacio ya registrado |
+| `500` | Error interno (sin `stack` en producción) |
+| `503` | La base de datos no responde |
 
 ## Usuarios de prueba
 
@@ -262,6 +319,7 @@ En Postman: **Import** → seleccionar el archivo. La colección trae la variabl
 | Datos iniciales | Creación de un espacio para cada propietario. Se ejecuta una sola vez sobre una base nueva |
 | Preparación | Consulta de `/api/spaces/mios` de cada propietario y guardado de sus ID en `idEspacioOwner1` e `idEspacioOwner2` |
 | Pruebas de permisos | Las nueve pruebas de autorización |
+| Errores | Taller de errores y validaciones: 400, 401, 403, 404, 409, 500 y 503, todos con el formato `{ "error": { "code", "message" } }` |
 
 ### Pruebas de permisos
 
@@ -287,6 +345,8 @@ Las pruebas 08 y 09 van juntas: el administrador elimina un espacio que él mism
 4. Clic en **Run Reservas API**.
 
 Resultado obtenido: **19 pruebas, 19 aprobadas, 0 fallidas**.
+
+En la carpeta **Errores**, E12 (500) y E13 (503) solo aplican en las condiciones de la sección *Cómo provocar el 500 y el 503*; en una corrida normal quedan como omitidas. Las capturas de evidencia van en `evidencias/manejo-errores/`.
 
 ## Pruebas con PowerShell
 
