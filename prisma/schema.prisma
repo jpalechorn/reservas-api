@@ -7,10 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  OWNER
+  CLIENT
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CLIENT)
+  spaces    Space[]
+  createdAt DateTime @default(now())
+}
+
 model Space {
   id       Int    @id @default(autoincrement())
   name     String @unique
   capacity Int
   location String
   type     String
+
+ ownerId  Int
+ owner    User   @relation(fields: [ownerId], references: [id], onDelete: Restrict)
 }

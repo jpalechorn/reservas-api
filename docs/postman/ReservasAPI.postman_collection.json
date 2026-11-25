@@ -1,0 +1,828 @@
+{
+  "info": {
+    "_postman_id": "62163a01-86cc-4d84-934b-5af9315c74ba",
+    "name": "Reservas API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "60299442",
+    "_collection_link": "https://go.postman.co/collection/60299442-62163a01-86cc-4d84-934b-5af9315c74ba?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Autenticacion",
+      "item": [
+        {
+          "name": "Login ADMIN",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();\r\nconst token = json.token || (json.data && json.data.token);\r\n\r\npm.test(\"Login ADMIN responde 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"La respuesta trae token\", () => {\r\n    pm.expect(token).to.be.a(\"string\");\r\n});\r\n\r\npm.collectionVariables.set(\"tokenAdmin\", token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"admin@reservas.com\",\r\n    \"password\": \"Admin123*\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login OWNER 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();\r\nconst token = json.token || (json.data && json.data.token);\r\n\r\npm.test(\"Login OWNER 1 responde 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"El usuario tiene rol OWNER\", () => {\r\n    pm.expect(json.user.role).to.eql(\"OWNER\");\r\n});\r\n\r\npm.collectionVariables.set(\"tokenOwner1\", token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"owner1@reservas.com\",\r\n    \"password\": \"OwnerPrueba123*\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login CLIENTE",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();\r\nconst token = json.token || (json.data && json.data.token);\r\n\r\npm.test(\"Login CLIENTE responde 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"El usuario tiene rol CLIENT\", () => {\r\n    pm.expect(json.user.role).to.eql(\"CLIENT\");\r\n});\r\n\r\npm.collectionVariables.set(\"tokenCliente\", token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"cliente@reservas.com\",\r\n    \"password\": \"ClientePrueba123*\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login OWNER 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();\r\nconst token = json.token || (json.data && json.data.token);\r\n\r\npm.test(\"Login OWNER 2 responde 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"El usuario tiene rol OWNER\", () => {\r\n    pm.expect(json.user.role).to.eql(\"OWNER\");\r\n});\r\n\r\npm.collectionVariables.set(\"tokenOwner2\", token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"owner2@reservas.com\",\r\n    \"password\": \"OwnerPrueba123*\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Registrar CLIENTE",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Cliente Prueba\",\r\n    \"email\": \"cliente@reservas.com\",\r\n    \"password\": \"ClientePrueba123*\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Datos iniciales",
+      "item": [
+        {
+          "name": "Crear espacio OWNER 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();\r\nconst espacio = json.data || json;\r\n\r\npm.test(\"OWNER 1 puede crear espacios\", () => {\r\n    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r\n});\r\n\r\nif (espacio && espacio.id) {\r\n    pm.collectionVariables.set(\"idEspacioOwner1\", espacio.id);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOwner1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Sala Propietario Uno\",\r\n    \"capacity\": 15,\r\n    \"location\": \"Bloque B\",\r\n    \"type\": \"aula\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear espacio OWNER 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();\r\nconst espacio = json.data || json;\r\n\r\npm.test(\"OWNER 2 puede crear espacios\", () => {\r\n    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r\n});\r\n\r\nif (espacio && espacio.id) {\r\n    pm.collectionVariables.set(\"idEspacioOwner2\", espacio.id);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOwner2}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Sala Propietario Dos\",\r\n    \"capacity\": 15,\r\n    \"location\": \"Bloque C\",\r\n    \"type\": \"aula\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Preparacion",
+      "item": [
+        {
+          "name": "Mis espacios OWNER 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();\r\nconst espacios = Array.isArray(json) ? json : json.data;\r\n\r\npm.test(\"Mis espacios OWNER 1 responde 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nif (espacios && espacios.length > 0) {\r\n    pm.collectionVariables.set(\"idEspacioOwner1\", espacios[0].id);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOwner1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/mios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "mios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mis espacios OWNER 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();\r\nconst espacios = Array.isArray(json) ? json : json.data;\r\n\r\npm.test(\"Mis espacios OWNER 2 responde 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nif (espacios && espacios.length > 0) {\r\n    pm.collectionVariables.set(\"idEspacioOwner2\", espacios[0].id);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOwner2}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/mios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "mios"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pruebas de permisos",
+      "item": [
+        {
+          "name": "01 Crear sin token - 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Sin token no puede crear: 401\", () => {\r\n    pm.response.to.have.status(401);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Sala Sin Token\",\r\n    \"capacity\": 10,\r\n    \"location\": \"Bloque D\",\r\n    \"type\": \"aula\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "01 Cliente intenta crear - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CLIENT no puede crear espacios: 403\", () => {\r\n    pm.response.to.have.status(403);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Sala Cliente\",\r\n    \"capacity\": 10,\r\n    \"location\": \"Bloque D\",\r\n    \"type\": \"aula\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "03 OWNER 1 edita su espacio - 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"OWNER 1 puede editar su espacio: 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOwner1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Sala Propietario Uno\",\r\n    \"capacity\": 25,\r\n    \"location\": \"Bloque B\",\r\n    \"type\": \"aula\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/{{idEspacioOwner1}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "{{idEspacioOwner1}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "04 OWNER 1 edita espacio ajeno - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"OWNER 1 no puede editar espacio ajeno: 403\", () => {\r\n    pm.response.to.have.status(403);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOwner1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Sala Propietario Dos\",\r\n    \"capacity\": 25,\r\n    \"location\": \"Bloque C\",\r\n    \"type\": \"aula\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/{{idEspacioOwner2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "{{idEspacioOwner2}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "05 ADMIN edita espacio ajeno - 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"ADMIN puede editar cualquier espacio: 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Sala Propietario Dos\",\r\n    \"capacity\": 25,\r\n    \"location\": \"Bloque C\",\r\n    \"type\": \"aula\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/{{idEspacioOwner2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "{{idEspacioOwner2}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "06 OWNER 1 elimina su espacio - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"OWNER no puede eliminar espacios: 403\", () => {\r\n    pm.response.to.have.status(403);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOwner1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/{{idEspacioOwner1}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "{{idEspacioOwner1}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "07 CLIENT elimina espacio - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CLIENT no puede eliminar espacios: 403\", () => {\r\n    pm.response.to.have.status(403);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/{{idEspacioOwner1}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "{{idEspacioOwner1}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "08 ADMIN crea espacio temporal - 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();\r\nconst espacio = json.data || json;\r\n\r\npm.test(\"ADMIN crea espacio temporal\", () => {\r\n    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r\n});\r\n\r\nif (espacio && espacio.id) {\r\n    pm.collectionVariables.set(\"idEspacioTemporal\", espacio.id);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Sala Temporal Eliminacion\",\r\n    \"capacity\": 5,\r\n    \"location\": \"Bloque Z\",\r\n    \"type\": \"aula\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "09 ADMIN elimina espacio - 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"ADMIN puede eliminar espacios\", () => {\r\n    pm.expect(pm.response.code).to.be.oneOf([200, 204]);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/{{idEspacioTemporal}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "{{idEspacioTemporal}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": ""
+    },
+    {
+      "key": "idEspacioOwner1",
+      "value": ""
+    },
+    {
+      "key": "idEspacioOwner2",
+      "value": ""
+    },
+    {
+      "key": "idEspacioTemporal",
+      "value": ""
+    }
+  ]
+}
