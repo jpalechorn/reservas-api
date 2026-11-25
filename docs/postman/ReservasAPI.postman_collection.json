@@ -805,6 +805,604 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Errores",
+      "description": "Taller de errores y validaciones: todos los errores con el formato { error: { code, message } }. E12 y E13 solo aplican con el servidor sin JWT_SECRET en produccion y con la base apagada.",
+      "item": [
+        {
+          "name": "E01 Zod con dos campos malos - 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Formato { error: { code: \"VALIDATION_ERROR\", message } }', () => {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('VALIDATION_ERROR');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});",
+                  "pm.test('Zod reporta los dos campos', () => {",
+                  "  const campos = pm.response.json().error.details.map(d => d.campo);",
+                  "  pm.expect(campos).to.include.members(['name', 'capacity']);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOwner1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"A\",\n    \"capacity\": -5,\n    \"location\": \"Bloque A\",\n    \"type\": \"aula\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E02 JSON mal escrito - 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Formato { error: { code: \"INVALID_JSON\", message } }', () => {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('INVALID_JSON');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@reservas.com\",\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E03 id no numerico - 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Formato { error: { code: \"VALIDATION_ERROR\", message } }', () => {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('VALIDATION_ERROR');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "abc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E04 Sin token - 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Formato { error: { code: \"TOKEN_MISSING\", message } }', () => {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('TOKEN_MISSING');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Sala X\",\n    \"capacity\": 10,\n    \"location\": \"Bloque D\",\n    \"type\": \"aula\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E05 Credenciales invalidas - 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Formato { error: { code: \"INVALID_CREDENTIALS\", message } }', () => {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('INVALID_CREDENTIALS');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@reservas.com\",\n    \"password\": \"incorrecta123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E06 CLIENT crea espacio (rol) - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Formato { error: { code: \"FORBIDDEN_ROLE\", message } }', () => {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('FORBIDDEN_ROLE');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Sala Cliente\",\n    \"capacity\": 10,\n    \"location\": \"Bloque D\",\n    \"type\": \"aula\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E07 OWNER 1 edita espacio de OWNER 2 (no dueño) - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Formato { error: { code: \"NOT_SPACE_OWNER\", message } }', () => {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('NOT_SPACE_OWNER');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/{{idEspacioOwner2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "{{idEspacioOwner2}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOwner1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"capacity\": 15\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E08 Espacio que no existe - 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Formato { error: { code: \"SPACE_NOT_FOUND\", message } }', () => {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('SPACE_NOT_FOUND');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces",
+                "999999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E09 Ruta que no existe - 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Formato { error: { code: \"ROUTE_NOT_FOUND\", message } }', () => {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('ROUTE_NOT_FOUND');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cursos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cursos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E10 Correo repetido en registro - 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Formato { error: { code: \"EMAIL_TAKEN\", message } }', () => {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('EMAIL_TAKEN');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Admin Dos\",\n    \"email\": \"admin@reservas.com\",\n    \"password\": \"Admin12345*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E11 Nombre de espacio repetido (P2002) - 409",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Crea primero un espacio con ese nombre (si ya existe responde 409 y da igual).",
+                  "pm.sendRequest({",
+                  "  url: pm.collectionVariables.get('baseUrl') + '/api/spaces', method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + pm.collectionVariables.get('tokenAdmin') },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ name: 'Sala Temporal Errores', capacity: 10, location: 'Bloque D', type: 'aula' }) }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Formato { error: { code: \"DUPLICATE\", message } }', () => {",
+                  "  const e = pm.response.json().error;",
+                  "  pm.expect(e.code).to.eql('DUPLICATE');",
+                  "  pm.expect(e.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Sala Temporal Errores\",\n    \"capacity\": 10,\n    \"location\": \"Bloque D\",\n    \"type\": \"aula\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E12 500 en produccion sin stack",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Solo aplica con el servidor arrancado SIN JWT_SECRET y con NODE_ENV=production.",
+                  "if (pm.response.code === 500) {",
+                  "  pm.test('500 INTERNAL_ERROR sin stack', () => {",
+                  "    const e = pm.response.json().error;",
+                  "    pm.expect(e.code).to.eql('INTERNAL_ERROR');",
+                  "    pm.expect(e).to.not.have.property('stack');",
+                  "  });",
+                  "} else {",
+                  "  pm.test.skip('500: arranque sin JWT_SECRET y con NODE_ENV=production', () => {});",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@reservas.com\",\n    \"password\": \"Admin123*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E13 503 con la base apagada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Solo aplica con la base apagada (docker stop reservas-db).",
+                  "if (pm.response.code === 503) {",
+                  "  pm.test('503 DATABASE_UNAVAILABLE', () => pm.expect(pm.response.json().error.code).to.eql('DATABASE_UNAVAILABLE'));",
+                  "} else {",
+                  "  pm.test.skip('503: apague la base con docker stop reservas-db', () => {});",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spaces"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
