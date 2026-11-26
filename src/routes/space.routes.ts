@@ -12,12 +12,143 @@ const id = validate(idParamSchema, 'params');
 
 // Orden de cada ruta: ¿quién eres? -> ¿qué puedes hacer? -> ¿los datos son válidos? -> controlador.
 
-// Consultas públicas
+/**
+ * @swagger
+ * /api/spaces:
+ *   get:
+ *     summary: Listar todos los espacios
+ *     tags: [Espacios]
+ *     responses:
+ *       200:
+ *         description: Lista de espacios
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/Space' }
+ *   post:
+ *     summary: Crear un espacio (OWNER o ADMIN). El espacio queda a nombre de quien lo crea
+ *     tags: [Espacios]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/SpaceInput' }
+ *     responses:
+ *       201:
+ *         description: Espacio creado
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Space' }
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       409:
+ *         $ref: '#/components/responses/Conflict'
+ */
 router.get('/', spaceController.getAllSpaces);
 
-// Consultar espacios del usuario autenticado ("mios" va antes de "/:id")
+/**
+ * @swagger
+ * /api/spaces/mios:
+ *   get:
+ *     summary: Listar los espacios del usuario autenticado
+ *     tags: [Espacios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Espacios cuyo propietario es el usuario del token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/Space' }
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+// "mios" va antes de "/:id"; si no, Express lo tomaría como un id
 router.get('/mios', requireAuth, spaceController.getMySpaces);
 
+/**
+ * @swagger
+ * /api/spaces/{id}:
+ *   get:
+ *     summary: Consultar un espacio por id
+ *     tags: [Espacios]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema: { type: integer, example: 1 }
+ *     responses:
+ *       200:
+ *         description: Espacio encontrado
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Space' }
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *   put:
+ *     summary: Actualizar un espacio (el OWNER solo los suyos, el ADMIN cualquiera)
+ *     tags: [Espacios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema: { type: integer, example: 5 }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/SpaceUpdate' }
+ *     responses:
+ *       200:
+ *         description: Espacio actualizado
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Space' }
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       409:
+ *         $ref: '#/components/responses/Conflict'
+ *   delete:
+ *     summary: Eliminar un espacio (solo ADMIN)
+ *     tags: [Espacios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema: { type: integer, example: 16 }
+ *     responses:
+ *       204:
+ *         description: Espacio eliminado, sin contenido en la respuesta
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
 router.get('/:id', id, spaceController.getSpaceById);
 
 // Crear espacios: requiere autenticación y rol OWNER o ADMIN
